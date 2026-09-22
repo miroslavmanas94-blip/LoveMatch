@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoveMatch ❤️ | Aplikace pro Dva</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- ANIMOVANÁ POZADÍ ČÁSTICE -->
+    <div class="floating-hearts">
+        <div class="heart h1">❤️</div>
+        <div class="heart h2">💖</div>
+        <div class="heart h3">✨</div>
+        <div class="heart h4">💕</div>
+    </div>
+
+    <div class="app-container">
+
+        <!-- HLAVNÍ LOGO -->
+        <header class="brand-header">
+            <div class="logo-box">
+                <span class="logo-heart">❤️</span>
+            </div>
+            <h1 class="logo-title">Love<span>Match</span></h1>
+        </header>
+
+        <!-- 1. AUTH SCREEN (PŘIHLÁŠENÍ / REGISTRACE) -->
+        <div id="auth-screen" class="glass-card animated-fade">
+            
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="tab-btn-login" onclick="switchAuthMode('login')">Přihlášení</button>
+                <button type="button" class="auth-tab" id="tab-btn-register" onclick="switchAuthMode('register')">Registrace</button>
+            </div>
+
+            <!-- FORMULÁŘ PŘIHLÁŠENÍ -->
+            <form id="login-form" class="auth-form-content">
+                <div class="input-group">
+                    <label>E-mail</label>
+                    <input type="email" id="login-email" required placeholder="partner@email.cz">
+                </div>
+                <div class="input-group">
+                    <label>Heslo</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full pulse-btn">Přihlásit se ❤️</button>
+            </form>
+
+            <!-- FORMULÁŘ REGISTRACE -->
+            <form id="register-form" class="auth-form-content hidden">
+                <div class="input-group">
+                    <label>Váš E-mail *</label>
+                    <input type="email" id="reg-email" required placeholder="muj@email.cz">
+                </div>
+                <div class="input-group">
+                    <label>Heslo *</label>
+                    <input type="password" id="reg-password" required placeholder="Minimálně 6 znaků">
+                </div>
+                <div class="input-group">
+                    <label>Odkdy jste spolu?</label>
+                    <input type="date" id="reg-start-date">
+                </div>
+                <div class="input-group">
+                    <label>Místo prvního rande</label>
+                    <input type="text" id="reg-first-place" placeholder="např. Náplavka, Kavárna...">
+                </div>
+                <div class="input-group">
+                    <label>Přezdívka pro partnera</label>
+                    <input type="text" id="reg-nickname" placeholder="např. Broučku, Miláčku...">
+                </div>
+
+                <!-- Výběr profilovky -->
+                <div class="input-group">
+                    <label>Profilový avatar</label>
+                    <div class="avatar-picker">
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Love1" class="avatar-opt selected" onclick="pickAvatar(this)">
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Love2" class="avatar-opt" onclick="pickAvatar(this)">
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Love3" class="avatar-opt" onclick="pickAvatar(this)">
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Love4" class="avatar-opt" onclick="pickAvatar(this)">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">Vytvořit účet & Získat kód ✨</button>
+            </form>
+        </div>
+
+        <!-- 2. HLAVNÍ DASHBOARD -->
+        <div id="dashboard-screen" class="hidden animated-fade">
+
+            <!-- HORNÍ LIŠTA -->
+            <div class="top-nav glass-card">
+                <div class="user-profile">
+                    <img id="dash-avatar-img" src="" alt="Avatar">
+                    <div>
+                        <h3 id="dash-user-name">Vítej!</h3>
+                        <span id="dash-pair-badge" class="badge badge-warning">Nespárováno</span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="logout()">Odhlásit</button>
+            </div>
+
+            <!-- BANNER PRO PÁROVÁNÍ -->
+            <div id="pairing-banner" class="glass-card pair-banner hidden">
+                <div class="banner-info">
+                    <h4>🔗 Propojení s partnerem</h4>
+                    <p>Váš párovací kód: <strong id="my-pair-code-text" class="highlight-code">LOVE-XXXX</strong></p>
+                </div>
+                <div class="pair-input-row">
+                    <input type="text" id="partner-code-input" placeholder="Zadejte kód partnera" style="text-transform:uppercase;">
+                    <button type="button" class="btn btn-primary" onclick="pairPartner()">Propojit</button>
+                </div>
+            </div>
+
+            <!-- ZÁLOŽKOVÉ MENU (TAB NAVIGATION) -->
+            <nav class="main-tabs glass-card">
+                <button type="button" class="tab-btn active" id="tab-nav-dashboard" onclick="switchTab('dashboard')">📌 Nástěnka</button>
+                <button type="button" class="tab-btn" id="tab-nav-planner" onclick="switchTab('planner')">📅 Plánovač Rande</button>
+                <button type="button" class="tab-btn" id="tab-nav-watch" onclick="switchTab('watch')">🍿 Watch Party</button>
+                <button type="button" class="tab-btn" id="tab-nav-games" onclick="switchTab('games')">🎮 Herní Zóna</button>
+            </nav>
+
+            <!-- OBSAH ZÁLOŽEK -->
+
+            <!-- ZÁLOŽKA 1: NÁSTĚNKA -->
+            <div id="tab-content-dashboard" class="tab-content active">
+                <div class="grid-2">
+                    <div class="glass-card stat-box">
+                        <h3>Jsme spolu už ❤️</h3>
+                        <div id="timer-together" class="big-timer">0 dní, 00:00:00</div>
+                    </div>
+                    <div class="glass-card stat-box">
+                        <h3>Příští setkání ⏰</h3>
+                        <div id="timer-next-meet" class="big-timer">Žádné rande v plánovači</div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3>Naše Vzpomínky 💖</h3>
+                    <p><strong>Místo prvního setkání:</strong> <span id="dash-first-place">-</span></p>
+                    <p><strong>Přezdívka:</strong> <span id="dash-nickname">-</span></p>
+                </div>
+            </div>
+
+            <!-- ZÁLOŽKA 2: PLÁNOVAČ RANDE -->
+            <div id="tab-content-planner" class="tab-content hidden">
+                <div class="glass-card">
+                    <div class="flex-between">
+                        <h3>📅 Naplánovat Další Setkání / Rande</h3>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="showAddMeetupModal()">+ Nové Rande</button>
+                    </div>
+
+                    <div id="meetups-list" class="meetups-grid" style="margin-top: 15px;">
+                        <p class="empty-text">Zatím nebylo naplánováno žádné rande. Vytvořte první!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZÁLOŽKA 3: WATCH PARTY -->
+            <div id="tab-content-watch" class="tab-content hidden">
+                <div class="glass-card">
+                    <h3>🍿 Společné Sledování & Chat</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Sledujte videa z YouTube nebo odkaz na Netflix / Oneplay společně!</p>
+
+                    <div class="watch-controls">
+                        <select id="video-platform" style="padding: 10px; border-radius: 10px;">
+                            <option value="youtube">YouTube Video</option>
+                            <option value="external">Netflix / Oneplay Odkaz</option>
+                        </select>
+                        <input type="text" id="video-url-input" placeholder="Vložte YouTube ID videa nebo URL odkazu..." style="flex:1;">
+                        <button type="button" class="btn btn-primary" onclick="loadSharedVideo()">Spustit pro oba</button>
+                    </div>
+
+                    <div class="watch-layout">
+                        <!-- Přehrávač -->
+                        <div class="player-container glass-card">
+                            <iframe id="shared-iframe" src="https://www.youtube.com/embed/jfKfPfyJRdk" frameborder="0" allowfullscreen></iframe>
+                        </div>
+
+                        <!-- Živý Chat -->
+                        <div class="chat-container glass-card">
+                            <h4>💬 Živý Chat</h4>
+                            <div id="chat-messages" class="chat-box"></div>
+                            <div class="chat-input-row">
+                                <input type="text" id="chat-msg-input" placeholder="Napište zprávu...">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="sendChatMessage()">Odeslat</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZÁLOŽKA 4: HERNÍ ZÓNA -->
+            <div id="tab-content-games" class="tab-content hidden">
+                <div class="glass-card">
+                    <h3>🎮 Herní Aréna pro Dva</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Vyberte si hru a vyzvěte svého partnera!</p>
+
+                    <div class="games-menu-grid">
+                        <div class="game-card" onclick="openGame('chess')">
+                            <div class="game-icon">♟️</div>
+                            <h4>Šachy</h4>
+                            <p>Klasická strategie pro dva</p>
+                        </div>
+                        <div class="game-card" onclick="openGame('puzzle')">
+                            <div class="game-icon">🧩</div>
+                            <h4>Obrázkové Puzzle</h4>
+                            <p>Složte romantický obrázek</p>
+                        </div>
+                        <div class="game-card" onclick="openGame('pexeso')">
+                            <div class="game-icon">🎴</div>
+                            <h4>Pexeso pro Dva</h4>
+                            <p>Procvičte si paměť</p>
+                        </div>
+                        <div class="game-card" onclick="openGame('ttt')">
+                            <div class="game-icon">❌⭕</div>
+                            <h4>Piškvorky</h4>
+                            <p>Rychlá soubojová hra</p>
+                        </div>
+                        <div class="game-card" onclick="openGame('rps')">
+                            <div class="game-icon">✌️</div>
+                            <h4>Kámen, Nůžky, Papír</h4>
+                            <p>Rychlé rozhodování</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MODÁLNÍ OKNO HRY A DIALOGŮ -->
+        <div id="game-modal" class="modal-overlay hidden">
+            <div class="glass-card modal-window animated-pop">
+                <button type="button" class="modal-close" onclick="closeModal()">✕</button>
+                <div id="modal-content"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
